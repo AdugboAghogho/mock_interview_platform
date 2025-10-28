@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-// import InterviewCard from "@/components/InterviewCard";
+import InterviewCard from "@/components/InterviewCard";
+import { dummyInterviews } from "@/constants";
 
 // import { getCurrentUser } from "@/lib/actions/auth.action";
 // import {
@@ -48,21 +49,21 @@ async function Home() {
         <h2>Your Interviews</h2>
 
         <div className="interviews-section">
-          {/* {hasPastInterviews ? (
-            userInterviews?.map((interview) => (
-              <InterviewCard
-                key={interview.id}
-                userId={user?.id}
-                interviewId={interview.id}
-                role={interview.role}
-                type={interview.type}
-                techstack={interview.techstack}
-                createdAt={interview.createdAt}
-              />
-            ))
-          ) : (
-            <p>You haven&apos;t taken any interviews yet</p>
-          )} */}
+          {/* {hasPastInterviews ? ( */}
+          {/* userInterviews?.map((interview) => ( */}
+          {dummyInterviews?.map((interview) => (
+            <InterviewCard
+              key={interview.id}
+              // userId={user?.id}
+              interviewId={interview.id}
+              role={interview.role}
+              type={interview.type}
+              techstack={interview.techstack}
+              createdAt={interview.createdAt}
+            />
+          ))}
+          {/* // ) : ( // <p>You haven&apos;t taken any interviews yet</p>
+          // ) */}
         </div>
       </section>
 

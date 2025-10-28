@@ -14,7 +14,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
       <nav>
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="MockMate Logo" width={38} height={32} />
-          <h2 className="text-primary-100">MrKels PrepWise</h2>
+          <h2 className="text-primary-100">MrKels HireMind</h2>
         </Link>
       </nav>
 
@@ -24,3 +24,4 @@ const Layout = async ({ children }: { children: ReactNode }) => {
 };
 
 export default Layout;
+18334363285;
