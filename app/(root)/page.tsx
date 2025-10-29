@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import InterviewCard from "@/components/InterviewCard";
 import { dummyInterviews } from "@/constants";
 
-// import { getCurrentUser } from "@/lib/actions/auth.action";
-// import {
-//   getInterviewsByUserId,
-//   getLatestInterviews,
-// } from "@/lib/actions/general.action";
+import { getCurrentUser } from "@/lib/actions/auth.action";
+import {
+  getInterviewsByUserId,
+  getLatestInterviews,
+} from "@/lib/actions/general.action";
 
 async function Home() {
-  // const user = await getCurrentUser();
+  const user = await getCurrentUser();
 
   // const [userInterviews, allInterview] = await Promise.all([
   //   getInterviewsByUserId(user?.id!),
@@ -73,19 +73,20 @@ async function Home() {
         <div className="interviews-section">
           {/* {hasUpcomingInterviews ? (
             allInterview?.map((interview) => ( */}
-         {dummyInterviews?.map((interview) => (
-            <InterviewCard
-             key={interview.id}
-            //  userId={user?.id}
-             interviewId={interview.id}
-             role={interview.role}
-             type={interview.type}
-             techstack={interview.techstack}
-             createdAt={interview.createdAt}
-            />
-          )
-          // ) : (
-          //   <p>There are no interviews available</p>
+          {dummyInterviews?.map(
+            (interview) => (
+              <InterviewCard
+                key={interview.id}
+                //  userId={user?.id}
+                interviewId={interview.id}
+                role={interview.role}
+                type={interview.type}
+                techstack={interview.techstack}
+                createdAt={interview.createdAt}
+              />
+            )
+            // ) : (
+            //   <p>There are no interviews available</p>
           )}
         </div>
       </section>

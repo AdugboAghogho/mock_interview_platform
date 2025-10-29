@@ -1,9 +1,7 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyDd8WKjvuGOqkCZZBUOqsdzEA-yCCPJNIw",
@@ -12,7 +10,7 @@ const firebaseConfig = {
   storageBucket: "hiremind-d6838.firebasestorage.app",
   messagingSenderId: "291711464715",
   appId: "1:291711464715:web:00821f8721e5dc235d9e0e",
-  measurementId: "G-3SM0N0B3L3"
+  measurementId: "G-3SM0N0B3L3",
 };
 
 // Initialize Firebase
@@ -22,33 +20,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import { getApp, getApps, initializeApp } from "firebase/app";
 // // import { getAnalytics } from "firebase/analytics";
 // import { getAuth } from "firebase/auth";
 // import { getFirestore } from "firebase/firestore";
-
-
 
 // const firebaseConfig = {
 //   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,

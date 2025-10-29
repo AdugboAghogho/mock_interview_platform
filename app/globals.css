@@ -337,3 +337,7 @@
 .Sign-in_up{
   color: #b770d8ff;
 }
+
+.buttons {
+  @apply flex w-full justify-evenly gap-4 max-sm:flex-col max-sm:items-center;
+}
