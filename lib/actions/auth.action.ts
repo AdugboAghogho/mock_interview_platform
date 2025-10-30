@@ -80,7 +80,7 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
-    redirect("/");
+    // redirect("/");
   } catch (error: any) {
     console.log("");
 
@@ -131,4 +131,41 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function isAuthenticated() {
   const user = await getCurrentUser();
   return !!user;
+}
+
+interface GoogleAuthParams {
+  uid: string;
+  name: string;
+  email: string;
+  idToken: string;
+  isNewUser: boolean;
+}
+
+export async function googleAuth({
+  uid,
+  name,
+  email,
+  idToken,
+  isNewUser,
+}: GoogleAuthParams) {
+  try {
+    // 1. Handle New User (Sign-Up)
+    if (isNewUser) {
+    }
+
+    // 2. Set the Session Cookie
+    await setSessionCookie(idToken);
+
+    // 3. Perform the Server-Side Redirect
+    redirect("/");
+
+    // Note: The code below is unreachable because of redirect, but kept for type/structure.
+    return { success: true, message: "Google sign-in complete." };
+  } catch (error) {
+    console.error("Google Auth Server Action failed:", error);
+    return {
+      success: false,
+      message: "Failed to process Google sign-in/up on the server.",
+    };
+  }
 }

@@ -19,7 +19,7 @@ import {
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
-import { signIn, signUp } from "@/lib/actions/auth.action";
+import { googleAuth, signIn, signUp } from "@/lib/actions/auth.action";
 import FormField from "./FormField";
 
 const authFormSchema = (type: FormType) => {
@@ -97,52 +97,88 @@ const AuthForm = ({ type }: { type: FormType }) => {
     }
   };
 
-  // 2. NEW GOOGLE SIGN-IN LOGIC
+  // 2. REFINED GOOGLE SIGN-IN LOGIC (Client-Side)
   const handleGoogleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
 
       const user = userCredential.user;
-      const isNewUser = (userCredential as any).additionalUserInfo?.isNewUser;
-      const idToken = await user.getIdToken();
+      // The Firebase client SDK provides this info
+      const additionalUserInfo = (userCredential as any).additionalUserInfo;
 
+      const idToken = await user.getIdToken();
       if (!idToken) {
-        toast.error("Google Sign-in Failed. Please try again.");
+        toast.error("Google Sign-in failed: No token received.");
         return;
       }
 
-      if (isNewUser) {
-        const result = await signUp({
-          uid: user.uid,
-          name: user.displayName || "User",
-          email: user.email!,
-          password: "",
-        });
-
-        if (!result.success) {
-          toast.error(
-            result.message || "Failed to finalize account creation in database."
-          );
-        }
-      }
-
-      await signIn({
+      const result = await googleAuth({
+        uid: user.uid,
+        name: user.displayName || "User",
         email: user.email!,
         idToken,
+        isNewUser: additionalUserInfo?.isNewUser || false,
       });
+
+      if (!result.success) {
+        toast.error(result.message);
+      }
 
       toast.success("Signed in successfully with Google.");
       router.push("/");
+      // The redirect will happen *after* the toast shows (or close to it).
     } catch (error) {
       console.error("Google Sign-In Error:", error);
-      if (error && error.code === "auth/popup-closed-by-user") {
-        toast.error("Sign-in cancelled. The popup was closed.");
-      } else {
-        toast.error(`Google Sign-In failed: ${error}`);
-      }
     }
   };
+
+  // 2. NEW GOOGLE SIGN-IN LOGIC
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     const provider = new GoogleAuthProvider();
+  //     const userCredential = await signInWithPopup(auth, provider);
+
+  //     const user = userCredential.user;
+  //     const isNewUser = (userCredential as any).additionalUserInfo?.isNewUser;
+  //     const idToken = await user.getIdToken();
+
+  //     if (!idToken) {
+  //       toast.error("Google Sign-in Failed. Please try again.");
+  //       return;
+  //     }
+
+  //     if (isNewUser) {
+  //       const result = await signUp({
+  //         uid: user.uid,
+  //         name: user.displayName || "User",
+  //         email: user.email!,
+  //         password: "",
+  //       });
+
+  //       if (!result.success) {
+  //         toast.error(
+  //           result.message || "Failed to finalize account creation in database."
+  //         );
+  //       }
+  //     }
+
+  //     await signIn({
+  //       email: user.email!,
+  //       idToken,
+  //     });
+
+  //     toast.success("Signed in successfully with Google.");
+  //     router.push("/");
+  //   } catch (error) {
+  //     console.error("Google Sign-In Error:", error);
+  //     if (error && error.code === "auth/popup-closed-by-user") {
+  //       toast.error("Sign-in cancelled. The popup was closed.");
+  //     } else {
+  //       toast.error(`Google Sign-In failed: ${error}`);
+  //     }
+  //   }
+  // };
 
   const isSignIn = type === "sign-in";
 
