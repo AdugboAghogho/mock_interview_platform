@@ -178,7 +178,7 @@ const Agent = ({
         </div>
       </div>
 
-      {/* {messages.length > 0 && (
+      {messages.length > 0 && (
         <div className="transcript-border">
           <div className="transcript">
             <p
@@ -192,7 +192,7 @@ const Agent = ({
             </p>
           </div>
         </div>
-      )} */}
+      )}
 
       <div className="w-full flex justify-center">
         {callStatus !== "ACTIVE" ? (
