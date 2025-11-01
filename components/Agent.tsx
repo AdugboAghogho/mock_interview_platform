@@ -129,31 +129,35 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
-    // --- UPDATED LOGIC HERE ---
     if (type === "generate") {
-      // Use the new declarative 'generator' workflow
-      await vapi.start(generator, {
-        variableValues: {
-          username: userName,
-          userid: userId, // Pass 'userid' for the workflow to use in the API request body
+      await vapi.start(
+        undefined,
+        {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+          clientMessages: ["transcript"],
+          serverMessages: [],
         },
-      });
+        undefined,
+        generator
+      );
     } else {
-      // This is the Mock Interview mode, still using the 'interviewer' assistant DTO
       let formattedQuestions = "";
       if (questions) {
         formattedQuestions = questions
           .map((question) => `- ${question}`)
           .join("\n");
       }
-
-      await vapi.start(interviewer as CreateAssistantDTO, {
+      await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
         },
+        clientMessages: ["transcript"],
+        serverMessages: [],
       });
     }
-    // --- END UPDATED LOGIC ---
   };
 
   const handleDisconnect = () => {
