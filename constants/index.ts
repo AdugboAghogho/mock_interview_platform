@@ -1,4 +1,4 @@
-import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
+import { CreateAssistantDTO, CreateWorkflowDTO } from "@vapi-ai/web/dist/api";
 import { z } from "zod";
 
 export const mappings = {
@@ -271,3 +271,89 @@ export const dummyInterviews: Interview[] = [
     createdAt: "2024-03-14T15:30:00Z",
   },
 ];
+
+// --- NEW GENERATOR WORKFLOW ---
+export const generator: CreateWorkflowDTO = {
+  name: "InterviewGenerator",
+  model: {
+    provider: "openai",
+    model: "gpt-4-turbo",
+  },
+  voice: {
+    provider: "11labs",
+    voiceId: "sarah", // Or your preferred voice
+    stability: 0.4,
+    similarityBoost: 0.8,
+    speed: 1.0,
+  },
+  steps: [
+    // 1. GREETING
+    {
+      type: "say",
+      text: "Hello {{username}}, let's prepare an interview for you. I'll ask you a few questions and generate a perfect interview just for you. Are you ready?",
+      name: "greeting",
+    },
+    // 2. GATHER ROLE, TYPE, LEVEL, TECH STACK, AMOUNT
+    {
+      type: "gather",
+      name: "gather_details",
+      variables: [
+        {
+          name: "role",
+          description:
+            "The job role the user is applying for (e.g., Frontend Developer, Data Scientist, etc.).",
+        },
+        {
+          name: "type",
+          description:
+            "The type of interview: Technical, Behavioral, or Mixed.",
+        },
+        {
+          name: "level",
+          description:
+            "The required job experience level (e.g., Junior, Senior, Staff).",
+        },
+        {
+          name: "techstack",
+          description:
+            "A list of technologies and keywords to cover during the interview (e.g., React, TypeScript, Next.js, etc.).",
+        },
+        {
+          name: "amount",
+          description:
+            "The number of questions the user wants to generate (a small number like 3-5 is usually best for testing).",
+        },
+      ],
+    },
+    // 3. API CALL TO GENERATE INTERVIEW QUESTIONS
+    {
+      type: "api_request",
+      name: "generate_interview",
+      method: "POST",
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/generate`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        type: "{{type}}",
+        role: "{{role}}",
+        level: "{{level}}",
+        techstack: "{{techstack}}",
+        amount: "{{amount}}",
+        userid: "{{userid}}",
+      },
+      // IMPORTANT: Add "userid" to the workflow's available variables in Agent.tsx
+    },
+    // 4. CONFIRMATION
+    {
+      type: "say",
+      text: "Thanks for your patience. I'm happy to let you know that the interview has been successfully generated. If there's anything else you need, just let me know.",
+      name: "confirmation",
+    },
+    // 5. HANGUP
+    {
+      type: "hangup",
+      name: "hangup",
+    },
+  ],
+};

@@ -3,10 +3,11 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CreateAssistantDTO } from "@vapi-ai/web/dist/api"; // Added for type reference
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
-import { interviewer } from "@/constants";
+import { interviewer, generator } from "@/constants"; // <-- UPDATED: Imported 'generator'
 import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {
@@ -19,6 +20,16 @@ enum CallStatus {
 interface SavedMessage {
   role: "user" | "system" | "assistant";
   content: string;
+}
+
+// Assumed type for AgentProps, replace with your actual interface if different
+interface AgentProps {
+  userName: string;
+  userId: string;
+  interviewId?: string;
+  feedbackId?: string;
+  type: "generate" | "interview"; // Assuming these are the two types
+  questions?: string[];
 }
 
 const Agent = ({
@@ -44,7 +55,8 @@ const Agent = ({
       setCallStatus(CallStatus.FINISHED);
     };
 
-    const onMessage = (message: Message) => {
+    const onMessage = (message: any) => {
+      // Use 'any' or Vapi's Message type here
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript };
         setMessages((prev) => [...prev, newMessage]);
@@ -117,20 +129,17 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
+    // --- UPDATED LOGIC HERE ---
     if (type === "generate") {
-      await vapi.start(
-        undefined,
-        undefined,
-        undefined,
-        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
-        {
-          variableValues: {
-            username: userName,
-            userid: userId,
-          },
-        }
-      );
+      // Use the new declarative 'generator' workflow
+      await vapi.start(generator, {
+        variableValues: {
+          username: userName,
+          userid: userId, // Pass 'userid' for the workflow to use in the API request body
+        },
+      });
     } else {
+      // This is the Mock Interview mode, still using the 'interviewer' assistant DTO
       let formattedQuestions = "";
       if (questions) {
         formattedQuestions = questions
@@ -138,44 +147,22 @@ const Agent = ({
           .join("\n");
       }
 
-      await vapi.start(interviewer, {
+      await vapi.start(interviewer as CreateAssistantDTO, {
         variableValues: {
           questions: formattedQuestions,
         },
       });
     }
+    // --- END UPDATED LOGIC ---
   };
-  // const handleCall = async () => {
-  //   setCallStatus(CallStatus.CONNECTING);
-
-  //   if (type === "generate") {
-  //     await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-  //       variableValues: {
-  //         username: userName,
-  //         userid: userId,
-  //       },
-  //     });
-  //   } else {
-  //     let formattedQuestions = "";
-  //     if (questions) {
-  //       formattedQuestions = questions
-  //         .map((question) => `- ${question}`)
-  //         .join("\n");
-  //     }
-
-  //     await vapi.start(interviewer, {
-  //       variableValues: {
-  //         questions: formattedQuestions,
-  //       },
-  //     });
-  //   }
-  // };
 
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
 
+  // (Rest of the JSX remains the same)
+  // ...
   return (
     <>
       <div className="call-view">
