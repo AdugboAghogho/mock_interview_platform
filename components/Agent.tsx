@@ -129,34 +129,46 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(
-        undefined,
-        {
-          variableValues: {
-            username: userName,
-            userid: userId,
+    try {
+      if (type === "generate") {
+        // Use the workflow ID from your VAPI dashboard
+        // Pass it as a string with overrides
+        await vapi.start(
+          {
+            assistantId:
+              process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID! ||
+              "75048226-4432-4211-9c5a-0062977f169d",
           },
-          clientMessages: ["transcript"],
+          {
+            variableValues: {
+              username: userName,
+              userid: userId,
+            },
+          }
+        );
+      } else {
+        // Regular interview with assistant configuration
+        let formattedQuestions = "";
+        if (questions) {
+          formattedQuestions = questions
+            .map((question) => `- ${question}`)
+            .join("\n");
+        }
+
+        await vapi.start(interviewer, {
+          variableValues: {
+            questions: formattedQuestions,
+          },
+          clientMessages: [],
           serverMessages: [],
-        },
-        undefined,
-        generator
-      );
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
+        });
       }
-      await vapi.start(interviewer, {
-        variableValues: {
-          questions: formattedQuestions,
-        },
-        clientMessages: ["transcript"],
-        serverMessages: [],
-      });
+    } catch (error) {
+      console.error("Failed to start call:", error);
+      setCallStatus(CallStatus.INACTIVE);
+
+      // Show user-friendly error
+      alert("Failed to start the call. Please try again.");
     }
   };
 
