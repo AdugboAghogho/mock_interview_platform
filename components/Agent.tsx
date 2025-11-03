@@ -127,22 +127,18 @@ const Agent = ({
 
     try {
       if (type === "generate") {
-        //
-        // --- ✅ THE FIX ---
-        // Pass the 'generator' (CreateWorkflowDTO) object DIRECTLY to vapi.start().
-        // You don't need to wrap it in an "assistant" object.
-        //
-        // ✅ This line tells TypeScript to allow the type
-        await vapi.start(generator as CreateAssistantDTO, {
-          // <-- Just pass 'generator' here
-          variableValues: {
-            username: userName,
-            userid: userId,
-          },
-        });
-        //
-        // --- END OF FIX ---
-        //
+        await vapi.start(
+          undefined,
+          undefined,
+          undefined,
+          process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, // <-- Your ID from .env.local
+          {
+            variableValues: {
+              username: userName,
+              userid: userId,
+            },
+          }
+        );
       } else {
         // Mock Interview mode (This part was already correct)
         let formattedQuestions = "";
