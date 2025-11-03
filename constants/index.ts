@@ -277,194 +277,102 @@ export const dummyInterviews: Interview[] = [
 // --- NEW GENERATOR WORKFLOW ---
 export const generator: CreateWorkflowDTO = {
   name: "Generate Interview",
-  nodes: [
+  voice: {
+    provider: "deepgram",
+    voiceId: "thalia", // Using your voice choice from the old structure
+    model: "aura-2",
+  },
+  model: {
+    provider: "openai",
+    model: "gpt-4-turbo", // You may need to change this if you don't have GPT-4 access
+  },
+  steps: [
+    // 1. GREETING AND GATHERING ALL VARIABLES
     {
-      name: "start",
-      type: "conversation",
-      isStart: true,
-      metadata: {
-        position: {
-          x: 0,
-          y: 0,
-        },
-      },
+      type: "gather",
+      name: "gather_interview_details",
       prompt:
-        "Speak first. Greet the user and help them create a new AI Interviewer",
-      voice: {
-        model: "aura-2",
-        voiceId: "thalia",
-        provider: "deepgram",
-      },
-      variableExtractionPlan: {
-        output: [
-          {
-            title: "level",
-            description: "The job experience level.",
-            type: "string",
-            enum: ["entry", "mid", "senior"],
-          },
-          {
-            title: "amount",
-            description: "How many questions would you like to generate?",
-            type: "number",
-            enum: [],
-          },
-          {
-            title: "techstack",
-            description:
-              "A list of technologies to cover during the job interview. For example, React, Next.js, Express.js, Node and so on...",
-            type: "string",
-            enum: [],
-          },
-          {
-            title: "role",
-            description:
-              "What role should would you like to train for? For example Frontend, Backend, Fullstack, Design, UX?",
-            type: "string",
-            enum: [],
-          },
-          {
-            title: "type",
-            description: "What type of the interview should it be? ",
-            type: "string",
-            enum: ["behavioural", "technical", "mixed"],
-          },
-        ],
-      },
-    },
-    {
-      name: "apiRequest_1747470739045",
-      type: "apiRequest",
-      metadata: {
-        position: {
-          x: -16.075937072883846,
-          y: 703.623428447121,
+        "Hello {{username}}, let's prepare an interview for you. I'll ask you a few questions and generate a perfect interview just for you. Are you ready? First, what role should you like to train for?",
+      variables: [
+        {
+          name: "role",
+          description:
+            "What role should you like to train for? For example Frontend, Backend, Fullstack, Design, UX?",
+          type: "string",
         },
-      },
+        {
+          name: "level",
+          description: "The job experience level (e.g., Junior, Senior, Mid-Level).",
+          type: "string",
+          enum: ["entry", "mid", "senior"],
+        },
+        {
+          name: "type",
+          description: "What type of the interview should it be? Technical, Behavioral, or Mixed.",
+          type: "string",
+          enum: ["behavioural", "technical", "mixed"],
+        },
+        {
+          name: "techstack",
+          description:
+            "A list of technologies to cover during the job interview. For example, React, Next.js, Express.js, Node and so on…",
+          type: "string",
+        },
+        {
+          name: "amount",
+          description: "How many questions would you like to generate? (e.g., 3, 5, 7)",
+          type: "number",
+        },
+      ],
+      // This is the condition to exit the gather node and proceed to API request
+      next: [
+        {
+          condition: {
+            type: "ai",
+            prompt: "If user provided all the required variables (role, level, type, techstack, amount)",
+          },
+          step: "apiRequest_generate_interview",
+        },
+      ],
+    },
+
+    // 2. API CALL TO GENERATE INTERVIEW QUESTIONS
+    {
+      type: "api_request",
+      name: "apiRequest_generate_interview",
       method: "POST",
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/generate`,
-      headers: {
-        type: "object",
-        properties: {},
-      },
       body: {
-        type: "object",
-        properties: {
-          role: {
-            type: "string",
-            description: "",
-            value: "{{ role }}",
+        role: "{{role}}",
+        level: "{{level}}",
+        type: "{{type}}",
+        amount: "{{amount}}",
+        techstack: "{{techstack}}",
+        userid: "{{userid}}", // Passed from handleCall variableValues
+      },
+      // Move to success conversation on API completion
+      next: [
+        {
+          condition: {
+            type: "api_success",
           },
-          level: {
-            type: "string",
-            description: "",
-            value: "{{ level }}",
-          },
-          type: {
-            type: "string",
-            description: "",
-            value: "{{ type }}",
-          },
-          amount: {
-            type: "number",
-            description: "",
-            value: "{{ amount }}",
-          },
-          userid: {
-            type: "string",
-            description: "",
-            value: "{{ userid }}",
-          },
-          techstack: {
-            type: "string",
-            description: "",
-            value: "{{ techstack }}",
-          },
+          step: "confirmation_success",
         },
-      },
-      output: {
-        type: "object",
-        properties: {},
-      },
-      mode: "blocking",
-      hooks: [],
+      ],
     },
+
+    // 3. CONFIRMATION MESSAGE (Success)
     {
-      name: "conversation_1747721261435",
-      type: "conversation",
-      metadata: {
-        position: {
-          x: -17.547788169718615,
-          y: 1003.3409337989506,
-        },
-      },
-      prompt:
-        "Thank the user for the conversation and inform them that the interview was generated successfully.",
-      voice: {
-        provider: "deepgram",
-        voiceId: "thalia",
-        model: "aura-2",
-      },
+      type: "say",
+      name: "confirmation_success",
+      text: "Thanks for your patience! I'm happy to let you know that the interview has been successfully generated. Returning you to the dashboard now.",
+      next: [{ step: "hangup_call" }],
     },
+
+    // 4. HANGUP
     {
-      name: "conversation_1747744490967",
-      type: "conversation",
-      metadata: {
-        position: {
-          x: -11.165436030430953,
-          y: 484.94857971060617,
-        },
-      },
-      prompt: "Say that the Interview will be generated shortly.",
-      voice: {
-        provider: "deepgram",
-        voiceId: "thalia",
-        model: "aura-2",
-      },
-    },
-    {
-      name: "hangup_1747744730181",
       type: "hangup",
-      metadata: {
-        position: {
-          x: 76.01267674000721,
-          y: 1272.0665127156606,
-        },
-      },
-    },
-  ],
-  edges: [
-    {
-      from: "apiRequest_1747470739045",
-      to: "conversation_1747721261435",
-      condition: {
-        type: "ai",
-        prompt: "",
-      },
-    },
-    {
-      from: "start",
-      to: "conversation_1747744490967",
-      condition: {
-        type: "ai",
-        prompt: "If user provided all the required variables",
-      },
-    },
-    {
-      from: "conversation_1747744490967",
-      to: "apiRequest_1747470739045",
-      condition: {
-        type: "ai",
-        prompt: "",
-      },
-    },
-    {
-      from: "conversation_1747721261435",
-      to: "hangup_1747744730181",
-      condition: {
-        type: "ai",
-        prompt: "",
-      },
+      name: "hangup_call",
     },
   ],
 };

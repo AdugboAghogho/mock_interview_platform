@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CreateAssistantDTO } from "@vapi-ai/web/dist/api"; // Added for type reference
+import { CreateAssistantDTO, CreateWorkflowDTO } from "@vapi-ai/web/dist/api";
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
@@ -20,16 +20,6 @@ enum CallStatus {
 interface SavedMessage {
   role: "user" | "system" | "assistant";
   content: string;
-}
-
-// Assumed type for AgentProps, replace with your actual interface if different
-interface AgentProps {
-  userName: string;
-  userId: string;
-  interviewId?: string;
-  feedbackId?: string;
-  type: "generate" | "interview"; // Assuming these are the two types
-  questions?: string[];
 }
 
 const Agent = ({
@@ -129,25 +119,25 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
+    // CRITICAL: Ensure user data exists before starting the call
+    if (!userName || !userId) {
+      console.error("User data is missing. Cannot start Vapi call.");
+      setCallStatus(CallStatus.INACTIVE);
+      // Add a toast error here for the user if necessary
+      return;
+    }
+
     try {
       if (type === "generate") {
-        // Use the workflow ID from your VAPI dashboard
-        // Pass it as a string with overrides
-        await vapi.start(
-          {
-            assistantId:
-              process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID! ||
-              "75048226-4432-4211-9c5a-0062977f169d",
+        // --- CORRECTED DECLARATIVE WORKFLOW START ---
+        await vapi.start(generator, {
+          variableValues: {
+            username: userName,
+            userid: userId,
           },
-          {
-            variableValues: {
-              username: userName,
-              userid: userId,
-            },
-          }
-        );
+        } as any); // Use 'as any' if TypeScript complains about CreateWorkflowDTO structure
       } else {
-        // Regular interview with assistant configuration
+        // Mock Interview mode (using the static interviewer assistant object)
         let formattedQuestions = "";
         if (questions) {
           formattedQuestions = questions
@@ -155,20 +145,15 @@ const Agent = ({
             .join("\n");
         }
 
-        await vapi.start(interviewer, {
+        await vapi.start(interviewer as CreateAssistantDTO, {
           variableValues: {
             questions: formattedQuestions,
           },
-          clientMessages: [],
-          serverMessages: [],
         });
       }
     } catch (error) {
       console.error("Failed to start call:", error);
       setCallStatus(CallStatus.INACTIVE);
-
-      // Show user-friendly error
-      alert("Failed to start the call. Please try again.");
     }
   };
 
