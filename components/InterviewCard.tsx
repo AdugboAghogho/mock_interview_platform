@@ -38,8 +38,8 @@ const InterviewCard = async ({
   ).format("MMM D, YYYY");
 
   return (
-    <div className="card-border w-[360px] max-sm:w-full min-h-96 scale-100">
-      <div className="card-interview">
+    <div className="card-border w-[360px] max-sm:w-full min-h-96 ">
+      <div className="card-interview hover:scale-105">
         <div>
           {/* Type Badge */}
           <div

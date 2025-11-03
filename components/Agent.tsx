@@ -119,30 +119,32 @@ const Agent = ({
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
-    // CRITICAL: Ensure user data exists before starting the call
     if (!userName || !userId) {
       console.error("User data is missing. Cannot start Vapi call.");
       setCallStatus(CallStatus.INACTIVE);
-      // Add a toast error here for the user if necessary
       return;
     }
 
     try {
       if (type === "generate") {
-        // --- FIX: Wrap generator (CreateWorkflowDTO) inside a temporary Assistant Config ---
-        const workflowAssistant = {
-          workflow: generator, // Pass the entire generator object here
-          // Optionally add a temporary name or voice override here if needed
-        };
-
-        await vapi.start(workflowAssistant as CreateAssistantDTO, {
+        //
+        // --- ✅ THE FIX ---
+        // Pass the 'generator' (CreateWorkflowDTO) object DIRECTLY to vapi.start().
+        // You don't need to wrap it in an "assistant" object.
+        //
+        // ✅ This line tells TypeScript to allow the type
+        await vapi.start(generator as CreateAssistantDTO, {
+          // <-- Just pass 'generator' here
           variableValues: {
             username: userName,
             userid: userId,
           },
         });
+        //
+        // --- END OF FIX ---
+        //
       } else {
-        // Mock Interview mode (using the static interviewer assistant object)
+        // Mock Interview mode (This part was already correct)
         let formattedQuestions = "";
         if (questions) {
           formattedQuestions = questions
