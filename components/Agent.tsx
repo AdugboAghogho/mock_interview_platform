@@ -129,13 +129,18 @@ const Agent = ({
 
     try {
       if (type === "generate") {
-        // --- CORRECTED DECLARATIVE WORKFLOW START ---
-        await vapi.start(generator, {
+        // --- FIX: Wrap generator (CreateWorkflowDTO) inside a temporary Assistant Config ---
+        const workflowAssistant = {
+          workflow: generator, // Pass the entire generator object here
+          // Optionally add a temporary name or voice override here if needed
+        };
+
+        await vapi.start(workflowAssistant as CreateAssistantDTO, {
           variableValues: {
             username: userName,
             userid: userId,
           },
-        } as any); // Use 'as any' if TypeScript complains about CreateWorkflowDTO structure
+        });
       } else {
         // Mock Interview mode (using the static interviewer assistant object)
         let formattedQuestions = "";

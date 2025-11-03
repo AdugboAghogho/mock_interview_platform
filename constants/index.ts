@@ -152,8 +152,6 @@ End the conversation on a polite and positive note.
       },
     ],
   },
-  clientMessages: [],
-  serverMessages: [],
 };
 
 export const feedbackSchema = z.object({
@@ -302,13 +300,15 @@ export const generator: CreateWorkflowDTO = {
         },
         {
           name: "level",
-          description: "The job experience level (e.g., Junior, Senior, Mid-Level).",
+          description:
+            "The job experience level (e.g., Junior, Senior, Mid-Level).",
           type: "string",
           enum: ["entry", "mid", "senior"],
         },
         {
           name: "type",
-          description: "What type of the interview should it be? Technical, Behavioral, or Mixed.",
+          description:
+            "What type of the interview should it be? Technical, Behavioral, or Mixed.",
           type: "string",
           enum: ["behavioural", "technical", "mixed"],
         },
@@ -320,7 +320,8 @@ export const generator: CreateWorkflowDTO = {
         },
         {
           name: "amount",
-          description: "How many questions would you like to generate? (e.g., 3, 5, 7)",
+          description:
+            "How many questions would you like to generate? (e.g., 3, 5, 7)",
           type: "number",
         },
       ],
@@ -329,7 +330,8 @@ export const generator: CreateWorkflowDTO = {
         {
           condition: {
             type: "ai",
-            prompt: "If user provided all the required variables (role, level, type, techstack, amount)",
+            prompt:
+              "If user provided all the required variables (role, level, type, techstack, amount)",
           },
           step: "apiRequest_generate_interview",
         },
@@ -375,4 +377,4 @@ export const generator: CreateWorkflowDTO = {
       name: "hangup_call",
     },
   ],
-};
+} as any;
