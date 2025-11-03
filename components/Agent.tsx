@@ -131,7 +131,8 @@ const Agent = ({
           undefined,
           undefined,
           undefined,
-          process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, // <-- Your ID from .env.local
+          process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID! ||
+            "75048226-4432-4211-9c5a-0062977f169d", // <-- Your ID from .env.local
           {
             variableValues: {
               username: userName,
